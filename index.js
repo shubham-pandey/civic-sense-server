@@ -58,34 +58,52 @@ console.log('Initializing database at:', dbPath);
 
 let db;
 try {
+  // Ensure the directory exists
+  const dbDir = path.dirname(dbPath);
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+    console.log('Created database directory:', dbDir);
+  }
+  
   db = new Database(dbPath);
   console.log('Database initialized successfully');
 } catch (error) {
   console.error('Database initialization failed:', error);
+  console.error('Error details:', error.message);
+  console.error('Stack trace:', error.stack);
   process.exit(1);
 }
 
-db.exec(`CREATE TABLE IF NOT EXISTS reports (
-  id TEXT PRIMARY KEY,
-  description TEXT,
-  imageUrl TEXT,
-  lat REAL,
-  lng REAL,
-  status TEXT,
-  category TEXT,
-  priority TEXT,
-  department TEXT,
-  assignedTo TEXT,
-  createdAt INTEGER
-);`);
+try {
+  console.log('Creating database tables...');
+  db.exec(`CREATE TABLE IF NOT EXISTS reports (
+    id TEXT PRIMARY KEY,
+    description TEXT,
+    imageUrl TEXT,
+    lat REAL,
+    lng REAL,
+    status TEXT,
+    category TEXT,
+    priority TEXT,
+    department TEXT,
+    assignedTo TEXT,
+    createdAt INTEGER
+  );`);
+  console.log('Reports table created/verified');
 
-db.exec(`CREATE TABLE IF NOT EXISTS timeline (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  reportId TEXT,
-  status TEXT,
-  note TEXT,
-  at INTEGER
-);`);
+  db.exec(`CREATE TABLE IF NOT EXISTS timeline (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reportId TEXT,
+    status TEXT,
+    note TEXT,
+    at INTEGER
+  );`);
+  console.log('Timeline table created/verified');
+} catch (error) {
+  console.error('Database table creation failed:', error);
+  console.error('Error details:', error.message);
+  process.exit(1);
+}
 
 function computeRouting({ description = '', category = '' }) {
   const text = `${category} ${description}`.toLowerCase();
