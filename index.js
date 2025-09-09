@@ -1,3 +1,8 @@
+console.log('Starting Civic Sense API Server...');
+console.log('Node.js version:', process.version);
+console.log('Platform:', process.platform);
+console.log('Architecture:', process.arch);
+
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
@@ -5,7 +10,11 @@ const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
 
-const app = express();
+console.log('Dependencies loaded successfully');
+
+try {
+  const app = express();
+  console.log('Express app created');
 app.use(cors());
 app.use(express.json());
 
@@ -207,3 +216,9 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+
+} catch (error) {
+  console.error('❌ Server startup failed:', error);
+  console.error('Error stack:', error.stack);
+  process.exit(1);
+}
