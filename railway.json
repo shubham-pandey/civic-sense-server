@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "node step2-server.js",
+    "startCommand": "node step3-server.js",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE",
