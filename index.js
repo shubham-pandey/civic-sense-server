@@ -24,16 +24,37 @@ app.use('/uploads', express.static(uploadDir));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
+  try {
+    // Test database connection
+    db.prepare('SELECT 1').get();
+    res.status(200).json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: 'connected'
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
 });
 
 // DB init
 const dbPath = path.join(__dirname, 'data.db');
-const db = new Database(dbPath);
+console.log('Initializing database at:', dbPath);
+
+let db;
+try {
+  db = new Database(dbPath);
+  console.log('Database initialized successfully');
+} catch (error) {
+  console.error('Database initialization failed:', error);
+  process.exit(1);
+}
 
 db.exec(`CREATE TABLE IF NOT EXISTS reports (
   id TEXT PRIMARY KEY,
@@ -164,8 +185,12 @@ try {
 } catch {}
 
 const PORT = process.env.PORT || 4000;
+console.log(`Starting server on port ${PORT}...`);
+
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
+  console.log(`✅ Health check available at http://0.0.0.0:${PORT}/health`);
+  console.log(`✅ Reports API available at http://0.0.0.0:${PORT}/reports`);
 });
 
 // Handle server errors
